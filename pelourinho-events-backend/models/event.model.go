@@ -9,4 +9,6 @@ type Event struct {
 	EventDate     time.Time `json:"eventDate"`
 	EventLocation string    `json:"eventLocation"`
 	Rate          int       `json:"rate"`
+	CreatedAt     time.Time `json:"createdAt" gorm:"autoCreateTime"`
+	ModifiedAt    time.Time `json:"modifiedAt" gorm:"autoUpdateTime"`
 }
