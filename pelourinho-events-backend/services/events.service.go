@@ -7,7 +7,6 @@ import (
 	"pe/models"
 	"time"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -21,29 +20,21 @@ func NewEventService(db *gorm.DB) *EventService {
 	}
 }
 
-// func GetEvents(db *gorm.DB) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		var events []models.Event
-// 		db.Find(&events)
-// 		json.NewEncoder(w).Encode(events)
-// 	}
-// }
+func (s *EventService) GetEvents() ([]models.Event, error) {
+	var events []models.Event
+	err := s.db.Find(&events).Error
+	return events, err
+}
 
-func GetEvents(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	var event []models.Event
-
-	err := db.Find(&event).Error
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
-	err = json.NewEncoder(w).Encode(event)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+func (s *EventService) GetEventsHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		events, err := s.GetEvents()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(events)
 	}
 }
 
@@ -54,8 +45,6 @@ func CreateEvent(db *gorm.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
-		event.ID = uuid.New()
 
 		loc := time.Now()
 		event.CreatedAt = loc
