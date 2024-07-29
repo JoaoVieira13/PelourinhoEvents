@@ -1,9 +1,13 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Event struct {
-	ID            uint      `json:"id" gorm:"primaryKey"`
+	ID            uuid.UUID `json:"id" gorm:"type:uuid;primaryKey"`
 	Title         string    `json:"title"`
 	SubTitle      string    `json:"subTitle"`
 	EventDate     time.Time `json:"eventDate"`

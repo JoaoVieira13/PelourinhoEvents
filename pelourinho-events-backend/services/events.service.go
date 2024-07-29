@@ -7,14 +7,43 @@ import (
 	"pe/models"
 	"time"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func GetEvents(db *gorm.DB) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		var events []models.Event
-		db.Find(&events)
-		json.NewEncoder(w).Encode(events)
+type EventService struct {
+	db *gorm.DB
+}
+
+func NewEventService(db *gorm.DB) *EventService {
+	return &EventService{
+		db: db,
+	}
+}
+
+// func GetEvents(db *gorm.DB) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		var events []models.Event
+// 		db.Find(&events)
+// 		json.NewEncoder(w).Encode(events)
+// 	}
+// }
+
+func GetEvents(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	var event []models.Event
+
+	err := db.Find(&event).Error
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(event)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -25,6 +54,8 @@ func CreateEvent(db *gorm.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+
+		event.ID = uuid.New()
 
 		loc := time.Now()
 		event.CreatedAt = loc
